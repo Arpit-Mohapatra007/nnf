@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nnf/provider/habit_provider.dart';
 import 'package:nnf/routes/route_names.dart';
 
-class Dashboard extends StatelessWidget {
+class Dashboard extends ConsumerWidget {
   const Dashboard({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final habitData = ref.watch(habitProvider);
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text('Dashboard'),
@@ -25,7 +29,7 @@ class Dashboard extends StatelessWidget {
           padding: const EdgeInsets.all(8.0),
           child: Column(
             children: [
-              //profile
+              // Profile section
               Container(
                 padding: const EdgeInsets.all(16.0),
                 decoration: BoxDecoration(
@@ -45,13 +49,16 @@ class Dashboard extends StatelessWidget {
                         Text('Username', style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black87)),
+                          color: Colors.black87,
+                        )),
                         Text(
-                          'Badge:', 
+                          'Badge:',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
-                            color: Colors.black87)),
+                            color: Colors.black87,
+                          ),
+                        ),
                       ],
                     ),
                   ],
@@ -59,46 +66,78 @@ class Dashboard extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               
-              //calendar
+              // Dynamic data cards
               Card(
                 child: ListTile(
                   title: const Text('Longest Streak'),
-                  subtitle: const Text('0 days'),
+                  subtitle: Text('${habitData.longestStreak} days'),
                   leading: const Icon(Icons.calendar_month_outlined),
                 ),
               ),
               Card(
                 child: ListTile(
                   title: const Text('Current Streak'),
-                  subtitle: const Text('0 days'),
+                  subtitle: Text('${habitData.currentStreak} days'),
                   leading: const Icon(Icons.calendar_today_outlined),
                 ),
               ),
               Card(
                 child: ListTile(
                   title: const Text('Last Fap'),
-                  subtitle: const Text('Never'),
+                  subtitle: Text(_getLastFailText(habitData.lastFailDate)),
                   leading: const Icon(Icons.history_outlined),
                 ),
               ),
               Card(
                 child: ListTile(
                   title: const Text('Total Faps this month'),
-                  subtitle: const Text('0'),
+                  subtitle: Text('${_getMonthlyFapCount(habitData.dailyEntries)}'),
                   leading: const Icon(Icons.bar_chart_outlined),
                 ),
               ),
               Card(
                 child: ListTile(
                   title: const Text('Total Faps this year'),
-                  subtitle: const Text('0'),
+                  subtitle: Text('${_getYearlyFapCount(habitData.dailyEntries)}'),
                   leading: const Icon(Icons.show_chart_outlined),
                 ),
               ),
             ],
           ),
-        )
+        ),
       ),
     );
+  }
+  
+  String _getLastFailText(DateTime? lastFailDate) {
+    if (lastFailDate == null) return 'Never';
+    
+    final now = DateTime.now();
+    final difference = now.difference(lastFailDate).inDays;
+    
+    if (difference == 0) return 'Today';
+    if (difference == 1) return 'Yesterday';
+    return '$difference days ago';
+  }
+  
+  int _getMonthlyFapCount(Map<DateTime, bool> dailyEntries) {
+    final now = DateTime.now();
+    
+    return dailyEntries.entries
+        .where((entry) => 
+            entry.key.year == now.year &&
+            entry.key.month == now.month &&
+            entry.value == false)
+        .length;
+  }
+  
+  int _getYearlyFapCount(Map<DateTime, bool> dailyEntries) {
+    final now = DateTime.now();
+    
+    return dailyEntries.entries
+        .where((entry) => 
+            entry.key.year == now.year &&
+            entry.value == false)
+        .length;
   }
 }

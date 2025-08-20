@@ -26,7 +26,7 @@ class Welcome extends ConsumerWidget {
               children: [
                 ElevatedButton(
                   onPressed: () {
-                    showSuccessPopup(context: context);
+                    showSuccessPopup(context: context, ref: ref);
                   },
                   child: const Text('Yes', 
                   style: TextStyle(
@@ -37,7 +37,7 @@ class Welcome extends ConsumerWidget {
                 const SizedBox(width: 20),
                 ElevatedButton(
                   onPressed: () {
-                    showFailPopup(context: context);
+                    showFailPopup(context: context, ref: ref);
                   },
                   child: const Text('No',
                   style: TextStyle(
