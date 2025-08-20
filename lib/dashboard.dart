@@ -18,96 +18,196 @@ class Dashboard extends ConsumerWidget {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.warning_amber_outlined),
+            icon: const Icon(Icons.emoji_events),
             onPressed: () {
               context.goNamed(AppRouteNames.rewards);
             },
           ),
+          IconButton(
+            icon: const Icon(Icons.home),
+            onPressed: () {
+              context.goNamed(AppRouteNames.welcome);
+            },
+          ),
         ],
       ),
-      body: Center(
+      body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              // Profile section with user data
+              // Enhanced profile section
               Container(
-                padding: const EdgeInsets.all(16.0),
+                width: double.infinity,
+                padding: const EdgeInsets.all(20.0),
                 decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 19, 104, 160),
-                  borderRadius: BorderRadius.circular(8.0),
+                  gradient: LinearGradient(
+                    colors: [
+                      const Color.fromARGB(255, 19, 104, 160),
+                      const Color.fromARGB(255, 30, 136, 200),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(15.0),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: Column(
                   children: [
-                    // Show user's profile picture if available
+                    // Profile picture
                     CircleAvatar(
-                      radius: 30,
+                      radius: 40,
                       backgroundImage: habitData.userImagePath != null 
                           ? FileImage(File(habitData.userImagePath!))
                           : const AssetImage('assets/avatar.png') as ImageProvider,
+                      backgroundColor: Colors.white,
                     ),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          habitData.username ?? 'Username', 
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
+                    const SizedBox(height: 15),
+                    
+                    // Username
+                    Text(
+                      habitData.username ?? 'Username', 
+                      style: const TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    
+                    // Badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.white.withOpacity(0.3)),
+                      ),
+                      child: Text(
+                        _getBadgeText(habitData.currentStreak),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
                         ),
-                        Text(
-                          _getBadgeText(habitData.currentStreak),
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
               
-              // Dynamic data cards
+              // Stats grid
+              GridView.count(
+                crossAxisCount: 2,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                mainAxisSpacing: 15,
+                crossAxisSpacing: 15,
+                childAspectRatio: 1.3,
+                children: [
+                  _buildStatCard(
+                    'Current Streak',
+                    '${habitData.currentStreak}',
+                    'days',
+                    Icons.local_fire_department,
+                    Colors.orange,
+                  ),
+                  _buildStatCard(
+                    'Longest Streak',
+                    '${habitData.longestStreak}',
+                    'days',
+                    Icons.emoji_events,
+                    Colors.amber,
+                  ),
+                  _buildStatCard(
+                    'This Month',
+                    '${_getMonthlyCleanDays(habitData.dailyEntries)}',
+                    'clean days',
+                    Icons.calendar_month,
+                    Colors.green,
+                  ),
+                  _buildStatCard(
+                    'Success Rate',
+                    '${_getSuccessRate(habitData.dailyEntries)}%',
+                    'overall',
+                    Icons.trending_up,
+                    Colors.blue,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              
+              // Additional stats
               Card(
+                elevation: 5,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 child: ListTile(
-                  title: const Text('Longest Streak'),
-                  subtitle: Text('${habitData.longestStreak} days'),
-                  leading: const Icon(Icons.calendar_month_outlined),
+                  contentPadding: const EdgeInsets.all(16),
+                  title: const Text(
+                    'Last Failure',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(
+                    _getLastFailText(habitData.lastFailDate),
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                  leading: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.history, color: Colors.red),
+                  ),
                 ),
               ),
-              Card(
-                child: ListTile(
-                  title: const Text('Current Streak'),
-                  subtitle: Text('${habitData.currentStreak} days'),
-                  leading: const Icon(Icons.calendar_today_outlined),
-                ),
-              ),
-              Card(
-                child: ListTile(
-                  title: const Text('Last Fap'),
-                  subtitle: Text(_getLastFailText(habitData.lastFailDate)),
-                  leading: const Icon(Icons.history_outlined),
-                ),
-              ),
-              Card(
-                child: ListTile(
-                  title: const Text('Total Faps this month'),
-                  subtitle: Text('${_getMonthlyFapCount(habitData.dailyEntries)}'),
-                  leading: const Icon(Icons.bar_chart_outlined),
-                ),
-              ),
-              Card(
-                child: ListTile(
-                  title: const Text('Total Faps this year'),
-                  subtitle: Text('${_getYearlyFapCount(habitData.dailyEntries)}'),
-                  leading: const Icon(Icons.show_chart_outlined),
-                ),
+              
+              const SizedBox(height: 20),
+              
+              // Quick actions
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        context.goNamed(AppRouteNames.rewards);
+                      },
+                      icon: const Icon(Icons.emoji_events),
+                      label: const Text('View Rewards'),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        context.goNamed(AppRouteNames.welcome);
+                      },
+                      icon: const Icon(Icons.add_task),
+                      label: const Text('Daily Check-in'),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -116,15 +216,70 @@ class Dashboard extends ConsumerWidget {
     );
   }
   
+  Widget _buildStatCard(String title, String value, String subtitle, IconData icon, Color color) {
+    return Card(
+      elevation: 5,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15),
+          gradient: LinearGradient(
+            colors: [
+              color.withOpacity(0.1),
+              color.withOpacity(0.05),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 30, color: color),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+            Text(
+              subtitle,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
   String _getBadgeText(int currentStreak) {
-    if (currentStreak >= 365) return 'Badge: Lifetime Master';
-    if (currentStreak >= 180) return 'Badge: Hall of Fame';
-    if (currentStreak >= 90) return 'Badge: Platinum Legend';
-    if (currentStreak >= 60) return 'Badge: Diamond Achiever';
-    if (currentStreak >= 30) return 'Badge: Monthly Master';
-    if (currentStreak >= 14) return 'Badge: Two Week Titan';
-    if (currentStreak >= 7) return 'Badge: First Week Champion';
-    return 'Badge: Beginner';
+    if (currentStreak >= 365) return '🏆 Lifetime Master';
+    if (currentStreak >= 180) return '⭐ Hall of Fame';
+    if (currentStreak >= 90) return '💎 Platinum Legend';
+    if (currentStreak >= 60) return '💍 Diamond Achiever';
+    if (currentStreak >= 30) return '🥇 Monthly Master';
+    if (currentStreak >= 14) return '🥈 Two Week Titan';
+    if (currentStreak >= 7) return '🥉 First Week Champion';
+    return '🔰 Beginner';
   }
   
   String _getLastFailText(DateTime? lastFailDate) {
@@ -135,27 +290,29 @@ class Dashboard extends ConsumerWidget {
     
     if (difference == 0) return 'Today';
     if (difference == 1) return 'Yesterday';
-    return '$difference days ago';
+    if (difference < 7) return '$difference days ago';
+    if (difference < 30) return '${(difference / 7).floor()} weeks ago';
+    if (difference < 365) return '${(difference / 30).floor()} months ago';
+    return '${(difference / 365).floor()} years ago';
   }
   
-  int _getMonthlyFapCount(Map<DateTime, bool> dailyEntries) {
+  int _getMonthlyCleanDays(Map<DateTime, bool> dailyEntries) {
     final now = DateTime.now();
     
     return dailyEntries.entries
         .where((entry) => 
             entry.key.year == now.year &&
             entry.key.month == now.month &&
-            entry.value == false)
+            entry.value == true)
         .length;
   }
   
-  int _getYearlyFapCount(Map<DateTime, bool> dailyEntries) {
-    final now = DateTime.now();
+  int _getSuccessRate(Map<DateTime, bool> dailyEntries) {
+    if (dailyEntries.isEmpty) return 0;
     
-    return dailyEntries.entries
-        .where((entry) => 
-            entry.key.year == now.year &&
-            entry.value == false)
-        .length;
+    final totalDays = dailyEntries.length;
+    final successfulDays = dailyEntries.values.where((value) => value == true).length;
+    
+    return ((successfulDays / totalDays) * 100).round();
   }
 }

@@ -16,6 +16,7 @@ class Register extends HookConsumerWidget {
     final userImage = useState<File?>(null);
     final successImage = useState<File?>(null);
     final failureImage = useState<File?>(null);
+    final isLoading = useState(false);
     final picker = ImagePicker();
 
     Future<File?> pickImage() async {
@@ -30,197 +31,272 @@ class Register extends HookConsumerWidget {
       return null;
     }
 
+    Future<void> handleRegistration() async {
+      // Validate inputs
+      if (usernameController.text.trim().isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please enter a username')),
+        );
+        return;
+      }
+      
+      if (userImage.value == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please add your profile picture')),
+        );
+        return;
+      }
+      
+      if (successImage.value == null || failureImage.value == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please add both motivational photos')),
+        );
+        return;
+      }
+
+      isLoading.value = true;
+      
+      try {
+        // Register the user
+        ref.read(habitProvider.notifier).registerUser(
+          username: usernameController.text.trim(),
+          userImagePath: userImage.value!.path,
+          successImagePath: successImage.value!.path,
+          failureImagePath: failureImage.value!.path,
+        );
+        
+        // Show success message
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Welcome, ${usernameController.text.trim()}!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          
+          // Navigate to welcome page
+          context.goNamed(AppRouteNames.welcome);
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Registration failed: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } finally {
+        isLoading.value = false;
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Register'),
+        title: const Text('Welcome! Let\'s Get Started'),
         centerTitle: true,
+        automaticallyImplyLeading: false, // Remove back button
       ),
       body: SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Username field
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: TextField(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Welcome message
+              Card(
+                elevation: 4,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      const Icon(
+                        Icons.waving_hand,
+                        size: 50,
+                        color: Colors.orange,
+                      ),
+                      const SizedBox(height: 10),
+                      const Text(
+                        'Welcome to Your Journey!',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Let\'s set up your profile to personalize your experience',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey[600],
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              
+              // Username field
+              TextField(
                 controller: usernameController,
                 decoration: const InputDecoration(
-                  labelText: 'Username',
+                  labelText: 'Your Name',
+                  hintText: 'Enter your name',
+                  prefixIcon: Icon(Icons.person),
                   border: OutlineInputBorder(),
                 ),
+                textCapitalization: TextCapitalization.words,
               ),
-            ),
-            
-            // User profile image
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  const Text('Profile Picture', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  GestureDetector(
-                    onTap: () async {
-                      final image = await pickImage();
-                      if (image != null) {
-                        userImage.value = image;
-                      }
-                    },
-                    child: Container(
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.grey),
-                      ),
-                      child: userImage.value != null
-                          ? ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.file(
-                                userImage.value!,
-                                fit: BoxFit.cover,
-                              ),
-                            )
-                          : const Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.add_a_photo, size: 40, color: Colors.grey),
-                                Text('Tap to add photo'),
-                              ],
-                            ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            
-            // Success motivational image
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  const Text('Success Motivation Photo', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  const Text('(Shown when you stay clean)', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                  const SizedBox(height: 8),
-                  GestureDetector(
-                    onTap: () async {
-                      final image = await pickImage();
-                      if (image != null) {
-                        successImage.value = image;
-                      }
-                    },
-                    child: Container(
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        color: Colors.green[100],
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.green),
-                      ),
-                      child: successImage.value != null
-                          ? ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.file(
-                                successImage.value!,
-                                fit: BoxFit.cover,
-                              ),
-                            )
-                          : const Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.add_a_photo, size: 40, color: Colors.green),
-                                Text('Success Photo', textAlign: TextAlign.center),
-                              ],
-                            ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            
-            // Failure motivation image
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  const Text('Motivation Photo', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  const Text('(Shown when you fail)', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                  const SizedBox(height: 8),
-                  GestureDetector(
-                    onTap: () async {
-                      final image = await pickImage();
-                      if (image != null) {
-                        failureImage.value = image;
-                      }
-                    },
-                    child: Container(
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        color: Colors.red[100],
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.red),
-                      ),
-                      child: failureImage.value != null
-                          ? ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.file(
-                                failureImage.value!,
-                                fit: BoxFit.cover,
-                              ),
-                            )
-                          : const Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.add_a_photo, size: 40, color: Colors.red),
-                                Text('Motivation Photo', textAlign: TextAlign.center),
-                              ],
-                            ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            
-            // Register button
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: ElevatedButton(
-                onPressed: () {
-                  // Validate inputs
-                  if (usernameController.text.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Please enter a username')),
-                    );
-                    return;
+              const SizedBox(height: 20),
+              
+              // User profile image
+              _buildImagePicker(
+                title: 'Profile Picture',
+                subtitle: 'This will be shown on your dashboard',
+                image: userImage.value,
+                onTap: () async {
+                  final image = await pickImage();
+                  if (image != null) {
+                    userImage.value = image;
                   }
-                  
-                  if (userImage.value == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Please add your profile picture')),
-                    );
-                    return;
-                  }
-                  
-                  if (successImage.value == null || failureImage.value == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Please add both motivational photos')),
-                    );
-                    return;
-                  }
-                  
-                  ref.read(habitProvider.notifier).registerUser(
-                    username: usernameController.text,
-                    userImagePath: userImage.value!.path,
-                    successImagePath: successImage.value!.path,
-                    failureImagePath: failureImage.value!.path,
-                  );
-                  context.goNamed(AppRouteNames.dashboard);
                 },
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(200, 50),
+                color: Colors.blue,
+                icon: Icons.account_circle,
+              ),
+              const SizedBox(height: 20),
+              
+              // Success motivational image
+              _buildImagePicker(
+                title: 'Success Motivation Photo',
+                subtitle: 'Shown when you stay clean (optional but recommended)',
+                image: successImage.value,
+                onTap: () async {
+                  final image = await pickImage();
+                  if (image != null) {
+                    successImage.value = image;
+                  }
+                },
+                color: Colors.green,
+                icon: Icons.celebration,
+              ),
+              const SizedBox(height: 20),
+              
+              // Failure motivation image
+              _buildImagePicker(
+                title: 'Motivation Photo',
+                subtitle: 'Shown when you fail - helps you stay motivated',
+                image: failureImage.value,
+                onTap: () async {
+                  final image = await pickImage();
+                  if (image != null) {
+                    failureImage.value = image;
+                  }
+                },
+                color: Colors.red,
+                icon: Icons.psychology,
+              ),
+              const SizedBox(height: 30),
+              
+              // Register button
+              SizedBox(
+                width: double.infinity,
+                height: 55,
+                child: ElevatedButton.icon(
+                  onPressed: isLoading.value ? null : handleRegistration,
+                  icon: isLoading.value 
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.rocket_launch),
+                  label: Text(
+                    isLoading.value ? 'Setting up...' : 'Start My Journey!',
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
                 ),
-                child: const Text('Register', style: TextStyle(fontSize: 18)),
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImagePicker({
+    required String title,
+    required String subtitle,
+    required File? image,
+    required VoidCallback onTap,
+    required Color color,
+    required IconData icon,
+  }) {
+    return Card(
+      elevation: 3,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              subtitle,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Center(
+              child: GestureDetector(
+                onTap: onTap,
+                child: Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: color, width: 2),
+                  ),
+                  child: image != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.file(
+                            image,
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      : Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(icon, size: 40, color: color),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Tap to add photo',
+                              style: TextStyle(
+                                color: color,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                ),
               ),
             ),
           ],

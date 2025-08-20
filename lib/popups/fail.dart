@@ -7,16 +7,22 @@ import 'package:nnf/routes/route_names.dart';
 
 Future showFailPopup({
   required BuildContext context,
-  required WidgetRef ref, 
+  required WidgetRef ref,
 }) {
+  final habitData = ref.read(habitProvider); 
   return showGenericPopup(
     context: context,
     title: 'You Failed Today',
-    content: 'You are a disgrace to Humanity. You failed today, but you can try again tomorrow.',
+    content: 'You failed today, but tomorrow is a new opportunity. Don\'t give up on your journey!',
+    imagePath: habitData.failureImagePath,
     optionsBuilder: () => {
-      'OK': () {
-        ref.read(habitProvider.notifier).recordFailure(); 
-        context.goNamed(AppRouteNames.dashboard);
+      'Try Again Tomorrow': () {
+         ref.read(habitProvider.notifier).recordFailure();
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (context.mounted) {
+            context.goNamed(AppRouteNames.dashboard);
+          }
+        });
       },
     },
   );
