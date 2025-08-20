@@ -13,6 +13,7 @@ class Register extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final usernameController = useTextEditingController();
+    final phoneNumberController = useTextEditingController();
     final userImage = useState<File?>(null);
     final successImage = useState<File?>(null);
     final failureImage = useState<File?>(null);
@@ -40,6 +41,13 @@ class Register extends HookConsumerWidget {
         return;
       }
       
+      if (phoneNumberController.text.trim().isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please enter a phone number')),
+        );
+        return;
+      }
+      
       if (userImage.value == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Please add your profile picture')),
@@ -60,6 +68,7 @@ class Register extends HookConsumerWidget {
         // Register the user
         ref.read(habitProvider.notifier).registerUser(
           username: usernameController.text.trim(),
+          phoneNumber: phoneNumberController.text.trim(),
           userImagePath: userImage.value!.path,
           successImagePath: successImage.value!.path,
           failureImagePath: failureImage.value!.path,
@@ -69,8 +78,9 @@ class Register extends HookConsumerWidget {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Welcome, ${usernameController.text.trim()}!'),
+              content: Text('Welcome, ${usernameController.text.trim()}! Messages will be sent to ${phoneNumberController.text.trim()}.'),
               backgroundColor: Colors.green,
+              duration: const Duration(seconds: 4),
             ),
           );
           
@@ -149,6 +159,20 @@ class Register extends HookConsumerWidget {
                   border: OutlineInputBorder(),
                 ),
                 textCapitalization: TextCapitalization.words,
+              ),
+              const SizedBox(height: 20),
+
+              // Phone number field
+              TextField(
+                controller: phoneNumberController,
+                decoration: const InputDecoration(
+                  labelText: 'Accountability Partner\'s Phone',
+                  hintText: 'Enter phone number (with country code)',
+                  helperText: 'WhatsApp messages will be sent to this number',
+                  prefixIcon: Icon(Icons.phone),
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.phone,
               ),
               const SizedBox(height: 20),
               

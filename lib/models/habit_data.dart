@@ -5,6 +5,7 @@ class HabitData {
   final DateTime? lastFailDate;
   final String? username;
   final String? userImagePath;
+  final String? phoneNumber;
   final String? successImagePath;
   final String? failureImagePath;
   final bool isRegistered;
@@ -16,6 +17,7 @@ class HabitData {
     this.lastFailDate,
     this.username,
     this.userImagePath,
+    this.phoneNumber,
     this.successImagePath,
     this.failureImagePath,
     this.isRegistered = false,
@@ -33,6 +35,7 @@ class HabitData {
     DateTime? lastFailDate,
     String? username,
     String? userImagePath,
+    String? phoneNumber,
     String? successImagePath,
     String? failureImagePath,
     bool? isRegistered,
@@ -44,6 +47,7 @@ class HabitData {
       lastFailDate: lastFailDate ?? this.lastFailDate,
       username: username ?? this.username,
       userImagePath: userImagePath ?? this.userImagePath,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
       successImagePath: successImagePath ?? this.successImagePath,
       failureImagePath: failureImagePath ?? this.failureImagePath,
       isRegistered: isRegistered ?? this.isRegistered,

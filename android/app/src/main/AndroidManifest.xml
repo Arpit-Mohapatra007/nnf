@@ -1,6 +1,33 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <queries>
+        <!-- For WhatsApp -->
+        <package android:name="com.whatsapp" />
+        
+        <!-- For WhatsApp Business -->
+        <package android:name="com.whatsapp.w4b" />
+        
+        <!-- For browser/web URLs -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
+        
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="http" />
+        </intent>
+        <!-- For phone calls -->
+        <intent>
+            <action android:name="android.intent.action.DIAL" />
+            <data android:scheme="tel" />
+        </intent>
+        </queries>
+
+        <!-- Internet permission -->
+        <uses-permission android:name="android.permission.INTERNET" />
+
     <application
-        android:label="nnf"
+        android:label="NNF"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

@@ -235,8 +235,7 @@ class Dashboard extends ConsumerWidget {
             end: Alignment.bottomRight,
           ),
         ),
-        child: Expanded(
-          child: Column(
+        child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(icon, size: 30, color: color),
@@ -269,7 +268,6 @@ class Dashboard extends ConsumerWidget {
             ],
           ),
         ),
-      ),
     );
   }
   
