@@ -40,19 +40,18 @@ class HabitNotifier extends StateNotifier<HabitData> {
         }
       }
       
-      if (isRegistered && username != null && username.isNotEmpty) {
-        state = state.copyWith(
-          username: username,
-          userImagePath: userImagePath,
-          successImagePath: successImagePath,
-          failureImagePath: failureImagePath,
-          isRegistered: isRegistered,
-          currentStreak: currentStreak,
-          longestStreak: longestStreak,
-          lastFailDate: lastFailDate,
-          dailyEntries: dailyEntries,
-        );
-      }
+      // Always update the state with loaded data, regardless of registration status
+      state = state.copyWith(
+        username: username,
+        userImagePath: userImagePath,
+        successImagePath: successImagePath,
+        failureImagePath: failureImagePath,
+        isRegistered: isRegistered,
+        currentStreak: currentStreak,
+        longestStreak: longestStreak,
+        lastFailDate: lastFailDate,
+        dailyEntries: dailyEntries,
+      );
     } catch (e) {
       rethrow;
     }
@@ -144,6 +143,13 @@ class HabitNotifier extends StateNotifier<HabitData> {
     }
   }
 }
+
+// Create a FutureProvider that waits for the data to load
+final habitDataLoaderProvider = FutureProvider<bool>((ref) async {
+  final notifier = ref.watch(habitProvider.notifier);
+  await notifier._loadUserData();
+  return true;
+});
 
 final habitProvider = StateNotifierProvider<HabitNotifier, HabitData>((ref) {
   return HabitNotifier();

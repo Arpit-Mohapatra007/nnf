@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nnf/dashboard.dart';
@@ -7,29 +8,64 @@ import 'package:nnf/rewards.dart';
 import 'package:nnf/routes/route_names.dart';
 import 'package:nnf/welcome.dart';
 
+// Loading screen widget
+class LoadingScreen extends StatelessWidget {
+  const LoadingScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const CircularProgressIndicator(),
+            const SizedBox(height: 20),
+            Text(
+              'Loading your data...',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 final goRouterProvider = Provider<GoRouter>((ref) {
-  ref.watch(habitProvider.notifier);
-  
   return GoRouter(
-    // Set initial location based on registration status
-    initialLocation: '/initial',
+    // Set initial location
+    initialLocation: '/loading',
     routes: [
-      // Initial route that redirects based on registration status
+      // Loading route that waits for data to load
       GoRoute(
-        path: '/initial',
-        name: 'initial',
-        redirect: (context, state) {
-          final habitData = ref.read(habitProvider);
-          // Check if user is registered (has username and required data)
-          if (habitData.isRegistered && 
-              habitData.username != null && 
-              habitData.username!.isNotEmpty) {
-            return '/welcome';
-          } else {
-            return '/register';
-          }
+        path: '/loading',
+        name: 'loading',
+        builder: (context, state) {
+          return Consumer(
+            builder: (context, ref, child) {
+              final habitData = ref.watch(habitProvider);
+              
+              // Use a post frame callback to navigate after build completes
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (context.mounted) {
+                  if (habitData.isRegistered && 
+                      habitData.username != null && 
+                      habitData.username!.isNotEmpty) {
+                    context.go('/welcome');
+                  } else {
+                    context.go('/register');
+                  }
+                }
+              });
+              
+              return const LoadingScreen();
+            },
+          );
         },
-        builder: (context, state) => const Register(), // Fallback (shouldn't be reached)
       ),
       
       GoRoute(
