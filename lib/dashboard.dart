@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nnf/provider/habit_provider.dart';
 import 'package:nnf/routes/route_names.dart';
+import 'dart:io';
 
 class Dashboard extends ConsumerWidget {
   const Dashboard({super.key});
@@ -29,7 +30,7 @@ class Dashboard extends ConsumerWidget {
           padding: const EdgeInsets.all(8.0),
           child: Column(
             children: [
-              // Profile section
+              // Profile section with user data
               Container(
                 padding: const EdgeInsets.all(16.0),
                 decoration: BoxDecoration(
@@ -39,21 +40,27 @@ class Dashboard extends ConsumerWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const CircleAvatar(
+                    // Show user's profile picture if available
+                    CircleAvatar(
                       radius: 30,
-                      backgroundImage: AssetImage('assets/avatar.png'),
+                      backgroundImage: habitData.userImagePath != null 
+                          ? FileImage(File(habitData.userImagePath!))
+                          : const AssetImage('assets/avatar.png') as ImageProvider,
                     ),
                     Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Text('Username', style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        )),
+                      children: [
                         Text(
-                          'Badge:',
-                          style: TextStyle(
+                          habitData.username ?? 'Username', 
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        Text(
+                          _getBadgeText(habitData.currentStreak),
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
                             color: Colors.black87,
@@ -107,6 +114,17 @@ class Dashboard extends ConsumerWidget {
         ),
       ),
     );
+  }
+  
+  String _getBadgeText(int currentStreak) {
+    if (currentStreak >= 365) return 'Badge: Lifetime Master';
+    if (currentStreak >= 180) return 'Badge: Hall of Fame';
+    if (currentStreak >= 90) return 'Badge: Platinum Legend';
+    if (currentStreak >= 60) return 'Badge: Diamond Achiever';
+    if (currentStreak >= 30) return 'Badge: Monthly Master';
+    if (currentStreak >= 14) return 'Badge: Two Week Titan';
+    if (currentStreak >= 7) return 'Badge: First Week Champion';
+    return 'Badge: Beginner';
   }
   
   String _getLastFailText(DateTime? lastFailDate) {

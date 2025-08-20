@@ -4,4 +4,5 @@ class AppRouteNames {
   static const String rewards = '/rewards';
   static const String failPopup = '/fail-popup';
   static const String successPopup = '/success-popup';
+  static const String register = '/register';
 }

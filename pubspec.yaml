@@ -37,6 +37,9 @@ dependencies:
   go_router: ^16.2.0
   riverpod: ^2.6.1
   flutter_riverpod: ^2.6.1
+  flutter_hooks: ^0.21.3+1
+  image_picker: ^1.2.0
+  hooks_riverpod: ^2.6.1
 
 dev_dependencies:
   flutter_test:

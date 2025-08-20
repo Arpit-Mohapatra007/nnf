@@ -3,6 +3,20 @@ import '../models/habit_data.dart';
 
 class HabitNotifier extends StateNotifier<HabitData> {
   HabitNotifier() : super(HabitData());
+  void registerUser({
+    required String username,
+    required String userImagePath,
+    required String successImagePath,
+    required String failureImagePath,
+  }) {
+    state = state.copyWith(
+      username: username,
+      userImagePath: userImagePath,
+      successImagePath: successImagePath,
+      failureImagePath: failureImagePath,
+      isRegistered: true,
+    );
+  }
   
   void recordSuccess() {
     final today = HabitData.todayKey();
@@ -21,14 +35,14 @@ class HabitNotifier extends StateNotifier<HabitData> {
     );
   }
   
-   void recordFailure() {
+  void recordFailure() {
     final today = HabitData.todayKey();
     
     final updatedEntries = Map<DateTime, bool>.from(state.dailyEntries);
     updatedEntries[today] = false;
     
     state = state.copyWith(
-      currentStreak: 0, 
+      currentStreak: 0,
       dailyEntries: updatedEntries,
       lastFailDate: today,
     );

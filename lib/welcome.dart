@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nnf/popups/fail.dart';
 import 'package:nnf/popups/success.dart';
+import 'package:nnf/provider/habit_provider.dart';
 
 class Welcome extends ConsumerWidget {
   const Welcome({super.key});
@@ -14,7 +15,7 @@ class Welcome extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'Did you fapped today buddy?',
+              'Did you fapped today ${ref.watch(habitProvider).username}?',
               style: TextStyle(
                 fontSize: 24,
                 color: Colors.white,
